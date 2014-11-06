@@ -51,8 +51,20 @@ function hg_prompt_info {
     fi
 }
 
+function rvm_version_info {
+    local renv=""
+    if [ -e ~/.rvm/bin/rvm-prompt ]; then
+        renv="$(~/.rvm/bin/rvm-prompt i v g)"
+        if [ "$renv" != "" ]; then
+            echo "%F{161}|$renv|${R}"
+        fi
+    fi
+}
+
 ID="%F{75}%n${R}@%F{7}%m${R}"
+RVM='$(rvm_version_info)'
 SCM='$(git_prompt_info)$(svn_prompt_info)$(hg_prompt_info)'
 DIR=":%F{11}%~${R} %F{2}\$${R} "
 
-PROMPT="${ID}${SCM}${DIR}"
+PROMPT="${ID}${RVM}${SCM}${DIR}"
+
