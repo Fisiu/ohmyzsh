@@ -61,10 +61,19 @@ function rvm_version_info {
     fi
 }
 
+function virtualenv_info {
+    local venv=""
+    if [ -n "$VIRTUAL_ENV" ]; then
+        venv=$(basename $VIRTUAL_ENV)
+        echo "%F{231}|$venv|${R}"
+    fi
+}
+
 ID="%F{75}%n${R}@%F{7}%m${R}"
 RVM='$(rvm_version_info)'
+VENV='$(virtualenv_info)'
 SCM='$(git_prompt_info)$(svn_prompt_info)$(hg_prompt_info)'
 DIR=":%F{11}%~${R} %F{2}\$${R} "
 
-PROMPT="${ID}${RVM}${SCM}${DIR}"
+PROMPT="${ID}${RVM}${VENV}${SCM}${DIR}"
 
