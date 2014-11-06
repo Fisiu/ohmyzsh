@@ -1,5 +1,7 @@
 # zsh theme requires 256 color enabled terminal
 # i.e TERM=xterm-256color
+# Set required options
+#
 
 R="%{$reset_color%}"
 
@@ -10,45 +12,34 @@ HG_CHAR="☿"
 CLEAN_CHAR="$FG[002]✓${R}"
 DIRTY_CHAR="$FG[001]✗${R}"
 
-SCM_GIT_CHAR="$FG[002]${GIT_CHAR}${R}"
-SCM_SVN_CHAR="$FG[014]${SVN_CHAR}${R}"
-SCM_HG_CHAR="$FG[166]${HG_CHAR}${R}"
-
-ZSH_THEME_GIT_PROMPT_PREFIX="[${SCM_GIT_CHAR}|"
-ZSH_THEME_GIT_PROMPT_SUFFIX="]"
+ZSH_THEME_GIT_PROMPT_PREFIX="[%{$FG[002]%}${GIT_CHAR}${R}|"
+ZSH_THEME_GIT_PROMPT_SUFFIX=""
 ZSH_THEME_GIT_PROMPT_DIRTY=" $DIRTY_CHAR"
 ZSH_THEME_GIT_PROMPT_CLEAN=" $CLEAN_CHAR"
 
-function svn_prompt_info {
-    local branch=""
-    local repository=""
-    local version=""
-    local st=""
+# Set required options
+#
+setopt prompt_subst
+# Load required modules
+#
+autoload -Uz vcs_info
 
-    if [ -d ".svn" ]; then
-        branch=$(LANG=C svn info | grep '^URL:' | egrep -o '((tags|branches)/[^/]+|trunk).*' | sed -E -e 's/^(branches|tags)\///g')
-        
-        change_count=$(svn status | grep "?\|\!\|M\|A" | wc -l)
-        [[ "$change_count" == "0" ]] && st="${CLEAN_CHAR}" || st="${DIRTY_CHAR}"
-        
-        echo "[${SCM_SVN_CHAR}|${branch} ${st}]"
-    fi
-}
+# Set vcs_info parameters
+#
+zstyle ':vcs_info:*' enable git svn hg bzr
+zstyle ':vcs_info:*' check-for-changes true
+zstyle ':vcs_info:*' check-for-staged-changes true
+zstyle ':vcs_info:*:*' unstagedstr '!'
+zstyle ':vcs_info:*:*' stagedstr '+'
+# zstyle ':vcs_info:git*' formats "[%{$FG[002]%}${GIT_CHAR}${R}|%b%u%c]"
+zstyle ':vcs_info:git*' formats "%u%c]"
+zstyle ':vcs_info:svn*' formats "[%{$FG[014]%}${SVN_CHAR}${R}|%b%u%c]"
+zstyle ':vcs_info:hg*' formats "[%{$FG[166]%}${HG_CHAR}${R}|%b%u%c]"
 
-function hg_prompt_info {
-    local root=""
-    local branch=""
-    local st=""
-    
-    root=$(hg branch 2> /dev/null)
-    if [ $? -eq 0 ]; then
-        branch=$(hg branch 2> /dev/null)
-        
-        change_count=$(hg status | grep "?\|\!\|M\|A" | wc -l)
-        [[ "$change_count" == "0" ]] && st="${CLEAN_CHAR}" || st="${DIRTY_CHAR}"
+# zstyle ':vcs_info:git*' actionformats "%s  %r/%S %b %m%u%c "
 
-        echo "[$SCM_HG_CHAR|${branch} ${st}]"
-    fi
+precmd() {
+    vcs_info
 }
 
 function rvm_version_info {
@@ -72,8 +63,34 @@ function virtualenv_info {
 ID='$FG[075]%n${R}@$FG[007]%m${R}'
 RVM='$FG[161]$(rvm_version_info)${R}'
 VENV='$FG[231]$(virtualenv_info)${R}'
-SCM='$(git_prompt_info)$(svn_prompt_info)$(hg_prompt_info)'
-DIR="${R}:$FG[011]%~${R} $FG[002]\$${R} "
+GIT='$(git_prompt_info)'
+SCM='${vcs_info_msg_0_}'
+DIR='${R}:$FG[011]%~${R} $FG[002]\$${R} '
 
-PROMPT="${ID}${RVM}${VENV}${SCM}${DIR}"
+PROMPT="${ID}${RVM}${VENV}${GIT}${SCM}${DIR}"
 
+# ------------------------------------------------------------------------------
+#
+# List of vcs_info format strings:
+#
+# %b => current branch
+# %a => current action (rebase/merge)
+# %s => current version control system
+# %r => name of the root directory of the repository
+# %S => current path relative to the repository root directory
+# %m => in case of Git, show information about stashes
+# %u => show unstaged changes in the repository
+# %c => show staged changes in the repository
+#
+# List of prompt format strings:
+#
+# prompt:
+# %F => color dict
+# %f => reset color
+# %~ => current path
+# %* => time
+# %n => username
+# %m => shortname host
+# %(?..) => prompt conditional - %(condition.true.false)
+#
+# ------------------------------------------------------------------------------
