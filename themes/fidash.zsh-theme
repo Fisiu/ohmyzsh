@@ -7,15 +7,15 @@ GIT_CHAR="±"
 SVN_CHAR="⑆"
 HG_CHAR="☿"
 
-CLEAN_CHAR="%F{2}✓${R}"
-DIRTY_CHAR="%F{1}✗${R}"
+CLEAN_CHAR="$FG[002]✓${R}"
+DIRTY_CHAR="$FG[001]✗${R}"
 
-SCM_GIT_CHAR="%F{2}${GIT_CHAR}${R}"
-SCM_SVN_CHAR="%F{14}${SVN_CHAR}${R}"
-SCM_HG_CHAR="%F{F9}${HG_CHAR}${R}"
+SCM_GIT_CHAR="$FG[002]${GIT_CHAR}${R}"
+SCM_SVN_CHAR="$FG[014]${SVN_CHAR}${R}"
+SCM_HG_CHAR="$FG[166]${HG_CHAR}${R}"
 
 ZSH_THEME_GIT_PROMPT_PREFIX="[${SCM_GIT_CHAR}|"
-ZSH_THEME_GIT_PROMPT_SUFFIX="${R}]"
+ZSH_THEME_GIT_PROMPT_SUFFIX="]"
 ZSH_THEME_GIT_PROMPT_DIRTY=" $DIRTY_CHAR"
 ZSH_THEME_GIT_PROMPT_CLEAN=" $CLEAN_CHAR"
 
@@ -56,7 +56,7 @@ function rvm_version_info {
     if [ -e ~/.rvm/bin/rvm-prompt ]; then
         renv="$(~/.rvm/bin/rvm-prompt i v g)"
         if [ "$renv" != "" ]; then
-            echo "%F{161}|$renv|${R}"
+            echo "|$renv|"
         fi
     fi
 }
@@ -65,15 +65,15 @@ function virtualenv_info {
     local venv=""
     if [ -n "$VIRTUAL_ENV" ]; then
         venv=$(basename $VIRTUAL_ENV)
-        echo "%F{231}|$venv|${R}"
+        echo "|$venv|"
     fi
 }
 
-ID="%F{75}%n${R}@%F{7}%m${R}"
-RVM='$(rvm_version_info)'
-VENV='$(virtualenv_info)'
+ID='$FG[075]%n${R}@$FG[007]%m${R}'
+RVM='$FG[161]$(rvm_version_info)${R}'
+VENV='$FG[231]$(virtualenv_info)${R}'
 SCM='$(git_prompt_info)$(svn_prompt_info)$(hg_prompt_info)'
-DIR=":%F{11}%~${R} %F{2}\$${R} "
+DIR="${R}:$FG[011]%~${R} $FG[002]\$${R} "
 
 PROMPT="${ID}${RVM}${VENV}${SCM}${DIR}"
 
