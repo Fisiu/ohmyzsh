@@ -13,8 +13,8 @@ compdef _laravel5 artisan
 compdef _laravel5 la5
 
 #Alias
-alias la5='php artisan'
+alias la5='php artisan --ansi'
 
-alias la5cache='php artisan cache:clear'
-alias la5routes='php artisan route:list'
-alias la5vendor='php artisan vendor:publish'
+alias la5cache='la5 cache:clear'
+alias la5routes='la5 route:list'
+alias la5vendor='la5 vendor:publish'
