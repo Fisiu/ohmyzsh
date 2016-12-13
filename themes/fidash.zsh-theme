@@ -60,14 +60,24 @@ function virtualenv_info {
     fi
 }
 
+function user_mark_info {
+    local mark=" $FG[002]$"
+    if [[ $UID == 0 || $EUID == 0  ]]; then
+        # root
+        mark=" $FG[160]#"
+    fi
+    echo "$mark"
+}
+
 ID='$FG[075]%n${R}@$FG[007]%m${R}'
 RVM='$FG[161]$(rvm_version_info)${R}'
 VENV='$FG[231]$(virtualenv_info)${R}'
 GIT='$(git_prompt_info)'
 SCM='${vcs_info_msg_0_}'
-DIR='${R}:$FG[011]%~${R} $FG[002]\$${R} '
+DIR='${R}:$FG[011]%~${R}'
+MARK='$(user_mark_info)${R} '
 
-PROMPT="${ID}${RVM}${VENV}${GIT}${SCM}${DIR}"
+PROMPT="${ID}${RVM}${VENV}${GIT}${SCM}${DIR}${MARK}"
 
 # ------------------------------------------------------------------------------
 #
