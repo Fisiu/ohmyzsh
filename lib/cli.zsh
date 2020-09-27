@@ -23,6 +23,7 @@ function _omz {
     local -a cmds subcmds
     cmds=(
         'help:Usage information'
+        'update:Update Oh My Zsh'
         'pr:Commands for Oh My Zsh Pull Requests'
     )
 
@@ -48,6 +49,7 @@ Usage: omz <command> [options]
 Available commands:
 
     help                Print this help message
+    update              Update Oh My Zsh
     pr <command>        Commands for Oh My Zsh Pull Requests
 
 EOF
@@ -103,7 +105,7 @@ EOF
 function _omz::pr::clean {
     (
         set -e
-        cd -q "$ZSH"
+        builtin cd -q "$ZSH"
 
         _omz::log info "removing all Oh My Zsh Pull Request branches..."
         command git branch --list 'ohmyzsh/pull-*' | while read branch; do
@@ -126,7 +128,7 @@ function _omz::pr::test {
 
     # Save current git HEAD
     local branch
-    branch=$(cd -q "$ZSH"; git symbolic-ref --short HEAD) || {
+    branch=$(builtin cd -q "$ZSH"; git symbolic-ref --short HEAD) || {
         _omz::log error "error when getting the current git branch. Aborting..."
         return 1
     }
@@ -136,7 +138,7 @@ function _omz::pr::test {
     # If any of these operations fail, undo the changes made
     (
         set -e
-        cd -q "$ZSH"
+        builtin cd -q "$ZSH"
 
         # Get the ohmyzsh git remote
         command git remote -v | while read remote url _; do
@@ -181,15 +183,29 @@ function _omz::pr::test {
     # After testing, go back to the previous HEAD if the user wants
     _omz::log prompt "do you want to go back to the previous branch? [Y/n] "
     read -r -k 1
+
+    # If no newline entered, add a newline
+    [[ "$REPLY" != $'\n' ]] && echo
+    # If NO selected, do nothing else
     [[ "$REPLY" = [nN] ]] && return
 
     (
         set -e
-        cd -q "$ZSH"
+        builtin cd -q "$ZSH"
 
         command git checkout "$branch" -- || {
             _omz::log error "could not go back to the previous branch ('$branch')."
             return 1
         }
     )
+}
+
+function _omz::update {
+    # Run update script
+    env ZSH="$ZSH" sh "$ZSH/tools/upgrade.sh"
+    # Update last updated file
+    zmodload zsh/datetime
+    echo "LAST_EPOCH=$(( EPOCHSECONDS / 60 / 60 / 24 ))" >! "${ZSH_CACHE_DIR}/.zsh-update"
+    # Remove update lock if it exists
+    command rm -rf "$ZSH/log/update.lock"
 }
